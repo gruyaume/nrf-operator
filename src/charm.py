@@ -8,6 +8,7 @@ import logging
 from typing import Union
 
 from charms.data_platform_libs.v0.data_interfaces import DatabaseCreatedEvent, DatabaseRequires
+from charms.nrf_operator.v0.nrf import NRFProvides
 from charms.observability_libs.v1.kubernetes_service_patch import KubernetesServicePatch
 from jinja2 import Environment, FileSystemLoader
 from lightkube.models.core_v1 import ServicePort
@@ -33,6 +34,7 @@ class NRFOperatorCharm(CharmBase):
         self._database = DatabaseRequires(
             self, relation_name="database", database_name=DATABASE_NAME
         )
+        self._nrf_provides = NRFProvides(charm=self, relationship_name="nrf", url=self._nrf_url)
         self.framework.observe(self.on.database_relation_joined, self._on_nrf_pebble_ready)
         self.framework.observe(self.on.nrf_pebble_ready, self._on_nrf_pebble_ready)
         self.framework.observe(self._database.on.database_created, self._on_database_created)
@@ -138,6 +140,10 @@ class NRFOperatorCharm(CharmBase):
             "GRPC_TRACE": "all",
             "GRPC_VERBOSITY": "debug",
         }
+
+    @property
+    def _nrf_url(self) -> str:
+        return f"{self.model.app.name}.{self.model.name}.svc.cluster.local"
 
 
 if __name__ == "__main__":
