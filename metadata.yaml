@@ -1,0 +1,26 @@
+name: nrf-operator
+display-name: 5G NRF operator
+summary: 5G NRF operator
+description: 5G NRF operator
+
+containers:
+  nrf:
+    resource: nrf-image
+    mounts:
+      - storage: nrf-volume
+        location: /etc/nrf/
+
+resources:
+  nrf-image:
+    type: oci-image
+    description: OCI image for 5G nrf
+    upstream-source: ghcr.io/gruyaume/omec-5g-nrf:1.0.1
+
+storage:
+  nrf-volume:
+    type: filesystem
+    minimum-size: 1M
+
+requires:
+  database:
+    interface: mongodb_client
