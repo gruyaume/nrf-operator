@@ -12,9 +12,9 @@ from charms.nrf_operator.v0.nrf import NRFProvides
 from charms.observability_libs.v1.kubernetes_service_patch import KubernetesServicePatch
 from jinja2 import Environment, FileSystemLoader
 from lightkube.models.core_v1 import ServicePort
-from ops.charm import CharmBase, PebbleReadyEvent, RelationCreatedEvent
+from ops.charm import CharmBase, PebbleReadyEvent, RelationCreatedEvent, RelationJoinedEvent
 from ops.main import main
-from ops.model import ActiveStatus, BlockedStatus, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus, ModelError, WaitingStatus
 from ops.pebble import Layer
 
 logger = logging.getLogger(__name__)
@@ -34,9 +34,10 @@ class NRFOperatorCharm(CharmBase):
         self._database = DatabaseRequires(
             self, relation_name="database", database_name=DATABASE_NAME
         )
-        self._nrf_provides = NRFProvides(charm=self, relationship_name="nrf", url=self._nrf_url)
+        self._nrf_provides = NRFProvides(charm=self, relationship_name="nrf")
         self.framework.observe(self.on.database_relation_joined, self._on_nrf_pebble_ready)
         self.framework.observe(self.on.nrf_pebble_ready, self._on_nrf_pebble_ready)
+        self.framework.observe(self.on.nrf_relation_joined, self._on_nrf_relation_joined)
         self.framework.observe(self._database.on.database_created, self._on_database_created)
         self._service_patcher = KubernetesServicePatch(
             charm=self,
@@ -92,6 +93,20 @@ class NRFOperatorCharm(CharmBase):
         self._container.add_layer("nrf", self._pebble_layer, combine=True)
         self._container.replan()
         self.unit.status = ActiveStatus()
+        self._update_nrf_relation()
+
+    def _on_nrf_relation_joined(self, event: RelationJoinedEvent) -> None:
+        try:
+            nrf_service = self._container.get_service(service_name="nrf")
+        except ModelError:
+            logger.info("NRF service not found")
+            return
+        if nrf_service.is_running():
+            self._update_nrf_relation()
+
+    def _update_nrf_relation(self):
+        """Update the NRF relation with the URL of the NRF service."""
+        self._nrf_provides.set_info(url=self._nrf_url)
 
     @property
     def _database_relation_is_created(self) -> bool:

@@ -41,15 +41,14 @@ class NRFRequirerCharmEvents(CharmEvents):
 
 class NRFProvides(Object):
 
-    def __init__(self, charm: CharmBase, relationship_name: str, url: str):
-        self.url = url
+    def __init__(self, charm: CharmBase, relationship_name: str):
+        self.relationship_name = relationship_name
         super().__init__(charm, relationship_name)
-        self.framework.observe(
-            charm.on[relationship_name].relation_joined, self._on_relation_joined
-        )
 
-    def _on_relation_joined(self, event: RelationJoinedEvent) -> None:
-        event.relation.data[self.model.app]["url"] = self.url
+    def set_info(self, url: str) -> None:
+        relations = self.model.relations[self.relationship_name]
+        for relation in relations:
+            relation.data[self.model.app]["url"] = url
 
 
 class NRFRequires(Object):
