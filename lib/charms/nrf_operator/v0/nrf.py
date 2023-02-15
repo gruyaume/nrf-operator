@@ -80,7 +80,9 @@ class NRFRequires(Object):
     def get_nrf_url(self) -> Optional[str]:
         """Returns NRF url."""
         for relation in self.model.relations[self.relationship_name]:
-            url = relation.app.data.get("url")
-            if url:
-                return url
+            if not relation.data:
+                continue
+            if not relation.data[relation.app]:
+                continue
+            return relation.data[relation.app].get("url", None)
         return None
