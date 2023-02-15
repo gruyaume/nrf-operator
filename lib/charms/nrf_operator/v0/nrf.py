@@ -61,9 +61,6 @@ class NRFRequires(Object):
         self.charm = charm
         super().__init__(charm, relationship_name)
         self.framework.observe(
-            charm.on[relationship_name].relation_joined, self._on_relation_changed
-        )
-        self.framework.observe(
             charm.on[relationship_name].relation_changed, self._on_relation_changed
         )
 
