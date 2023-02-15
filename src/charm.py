@@ -158,7 +158,7 @@ class NRFOperatorCharm(CharmBase):
 
     @property
     def _nrf_url(self) -> str:
-        return f"{self.model.app.name}.{self.model.name}.svc.cluster.local"
+        return f"http://{self.model.app.name}.{self.model.name}.svc.cluster.local:29510"
 
 
 if __name__ == "__main__":
