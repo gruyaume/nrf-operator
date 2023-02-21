@@ -77,3 +77,17 @@ class TestCharm(unittest.TestCase):
         self.harness.container_pebble_ready("nrf")
 
         self.assertEqual(self.harness.model.unit.status, ActiveStatus())
+
+    def test_given_cant_connect_to_workload_when_nrf_relation_joins_then_relation_data_is_not_updated(  # noqa: E501
+        self,
+    ):
+        self.harness.set_can_connect(container="nrf", val=False)
+
+        relation_id = self.harness.add_relation(relation_name="nrf", remote_app="amf")
+        self.harness.add_relation_unit(relation_id, "amf/0")
+
+        relation_data = self.harness.get_relation_data(
+            relation_id=relation_id, app_or_unit=self.harness.model.app
+        )
+
+        assert relation_data == {}

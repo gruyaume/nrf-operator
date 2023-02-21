@@ -96,13 +96,23 @@ class NRFOperatorCharm(CharmBase):
         self._update_nrf_relation()
 
     def _on_nrf_relation_joined(self, event: RelationJoinedEvent) -> None:
-        try:
-            nrf_service = self._container.get_service(service_name="nrf")
-        except ModelError:
-            logger.info("NRF service not found")
+        """Handle NRF relation joined event."""
+        if not self._nrf_service_is_running:
             return
-        if nrf_service.is_running():
-            self._update_nrf_relation()
+        self._update_nrf_relation()
+
+    @property
+    def _nrf_service_is_running(self) -> bool:
+        """Returns whether the NRF service is running."""
+        if not self._container.can_connect():
+            return False
+        try:
+            service = self._container.get_service(self._service_name)
+        except ModelError:
+            return False
+        if not service.is_running():
+            return False
+        return True
 
     def _update_nrf_relation(self):
         """Update the NRF relation with the URL of the NRF service."""
