@@ -110,9 +110,7 @@ class NRFOperatorCharm(CharmBase):
             service = self._container.get_service(self._service_name)
         except ModelError:
             return False
-        if not service.is_running():
-            return False
-        return True
+        return service.is_running()
 
     def _update_nrf_relation(self):
         """Update the NRF relation with the URL of the NRF service."""
