@@ -148,7 +148,7 @@ class NRFOperatorCharm(CharmBase):
                     "nrf": {
                         "override": "replace",
                         "startup": "enabled",
-                        "command": f"nrf --nrfcfg {BASE_CONFIG_PATH}/{CONFIG_FILE_NAME}",
+                        "command": f"/free5gc/nrf/nrf --nrfcfg {BASE_CONFIG_PATH}/{CONFIG_FILE_NAME}",
                         "environment": self._environment_variables,
                     },
                 },
